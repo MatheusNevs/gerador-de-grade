@@ -4,22 +4,24 @@ Este projeto foi desenvolvido para a disciplina de **Tópicos Avançados em Comp
 
 ## Tema
 
-O tema do projeto é um **Gerador de Grade Ótima**. O sistema recebe turmas de usuários, cada uma com um peso diferente baseado no desejo do usuário, e gera uma grade ótima considerando as restrições do problema.
+O tema do projeto é um **Gerador de Grade Ótima**. O sistema recebe turmas de usuários, cada uma com um peso diferente baseado no desejo do usuário, e gera uma grade ótima considerando as restrições do problema e algumas preferências informadas.
 
 ## Descrição
 
 O objetivo é criar uma grade de horários que maximize a satisfação dos usuários, levando em conta:
 
-- Pesos diferentes para cada turma, conforme o desejo do usuário.
-- Restrições detalhadas nos comentários do arquivo `main.py`, como:
-  - Carga horária máxima informada pelo usuário.
-  - Associação completa das aulas de uma determinada turma.
-  - No máximo uma turma para cada disciplina.
-  - Conflitos de horários entre disciplinas.
-  - Evitar/minimizar buracos.
-  - Distribuição espalhada/centralizada das turmas pelos dias.
+- Restrições implementadas:
+  - Carga horária total alocada não pode exceder o limite máximo definido.
+  - Todas as aulas de uma turma devem ser alocadas juntas (não é possível escolher apenas parte dos horários de uma turma).
+  - No máximo uma turma pode ser escolhida para cada disciplina.
+  - Não pode haver conflitos de horários entre turmas (nenhuma sobreposição de horários).
+- Função objetivo:
+  - Maximizar soma de pesos de turmas (informados pelo usuário).
+  - Minimizar o número de buracos na grade.
+  - Maximizar (ou minimizar, conforme preferência) a concentração das aulas em menos dias.
+  - E, tudo junto: Maximizar a soma ponderada das preferências (as 3 acimas) dos usuários pelas turmas escolhidas, a partir de coeficientes para cada tipo de preferência informados pelo usuário.
 
-O algoritmo utiliza técnicas de pesquisa operacional e faz uso da biblioteca **OR-Tools** do Google para programação linear, a fim de encontrar a melhor solução possível respeitando todas as restrições impostas.
+O algoritmo utiliza técnicas de programação linear inteira mista, implementadas com a biblioteca **OR-Tools** do Google, para encontrar a melhor solução possível respeitando todas as restrições e preferências definidas.
 
 ## Como usar
 
