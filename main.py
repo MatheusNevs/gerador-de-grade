@@ -3,12 +3,12 @@ from ortools.linear_solver import pywraplp
 # Configurações
 D = 5  # dias da semana
 H = 8  # horários por dia
-CARGA_HORARIA_MAXIMA = 280  # carga horária máxima total pedida (em horas)
+CARGA_HORARIA_MAXIMA = 390  # carga horária máxima total pedida (em horas)
 
 # Pesos para o objetivo (ajustáveis conforme a preferência do usuário)
-PESO_MAXIMIZAR_PREFERENCIA = 100  # Peso referente à maximização de preferências
-PESO_MINIMIZAR_BURACOS = 100  # Peso referente à minimalização de buracos
-PESO_QUANTIDADE_DIAS = 100  # Peso referente à distribuição mais uniforme ou centralizada (depende da preferência do usuário de distribuição)
+PESO_MAXIMIZAR_PREFERENCIA = 0.5  # Peso referente à maximização de preferências
+PESO_MINIMIZAR_BURACOS = 0.5
+PESO_QUANTIDADE_DIAS = 0.4  # Peso referente à distribuição mais uniforme ou centralizada (depende da preferência do usuário de distribuição)
 
 # Preferências
 DISTRIBUICAO_CENTRALIZADA = True  # Se True, distribui turmas de forma mais centralizada
@@ -48,8 +48,9 @@ for d in range(D):
 for d in range(D):
     for h in range(H):
         turmas_aqui = [t for t, _, hs, _ in entrada if (d, h) in hs]
-        if turmas_aqui:
-            solver.Add(ocupado[(d, h)] >= solver.Sum(x[t] for t in turmas_aqui))
+        soma_x = solver.Sum(x[t] for t in turmas_aqui)
+        solver.Add(ocupado[(d, h)] >= soma_x)
+        solver.Add(ocupado[(d, h)] <= soma_x)
 
 # Restrição 1: conflito de horários
 ocupacao = {}
@@ -79,19 +80,42 @@ solver.Add(
 
 # Função objetivo 1: minimizar buracos
 # Um buraco ocorre quando existe um horário livre (ocupado == 0) entre dois horários ocupados no mesmo dia
-buracos = []
+antes, depois = {}, {}
+for d in range(D):
+    for h in range(H):
+        antes[(d, h)] = solver.IntVar(0, 1, f"antes_{d}_{h}")
+        depois[(d, h)] = solver.IntVar(0, 1, f"depois_{d}_{h}")
+
+# Condições de fronteira
+for d in range(D):
+    solver.Add(antes[(d, 0)] == 0)
+    solver.Add(depois[(d, H - 1)] == 0)
+
+# Propagação de ‘antes’
+for d in range(D):
+    for h in range(1, H):
+        solver.Add(antes[(d, h)] >= ocupado[(d, h - 1)])
+        solver.Add(antes[(d, h)] >= antes[(d, h - 1)])
+        solver.Add(antes[(d, h)] <= ocupado[(d, h - 1)] + antes[(d, h - 1)])
+
+# Propagação de ‘depois’
+for d in range(D):
+    for h in range(H - 2, -1, -1):
+        solver.Add(depois[(d, h)] >= ocupado[(d, h + 1)])
+        solver.Add(depois[(d, h)] >= depois[(d, h + 1)])
+        solver.Add(depois[(d, h)] <= ocupado[(d, h + 1)] + depois[(d, h + 1)])
+
+# Definição de buracos
+buracos_list = []
 for d in range(D):
     for h in range(1, H - 1):
-        # Se o horário anterior e o próximo estão ocupados, mas o atual está livre, conta como buraco
-        buraco = solver.IntVar(0, 1, f"buraco_{d}_{h}")
-        solver.Add(
-            buraco >= ocupado[(d, h - 1)] + ocupado[(d, h + 1)] - 1 - ocupado[(d, h)]
-        )
-        solver.Add(buraco <= 1 - ocupado[(d, h)])
-        solver.Add(buraco <= ocupado[(d, h - 1)])
-        solver.Add(buraco <= ocupado[(d, h + 1)])
-        buracos.append(buraco)
-buracos = solver.Sum(buracos)
+        b = solver.IntVar(0, 1, f"buraco_{d}_{h}")
+        solver.Add(b >= antes[(d, h)] + depois[(d, h)] - 1 - ocupado[(d, h)])
+        solver.Add(b <= antes[(d, h)])
+        solver.Add(b <= depois[(d, h)])
+        solver.Add(b <= 1 - ocupado[(d, h)])
+        buracos_list.append(b)
+buracos = solver.Sum(buracos_list)
 
 # Funcao objetivo 2: maximizar preferências
 preferencias = solver.Sum(p * x[turma_id] for turma_id, _, _, p in entrada)
