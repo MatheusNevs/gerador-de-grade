@@ -1,4 +1,5 @@
 from ortools.linear_solver import pywraplp
+import json
 
 # Configurações via input
 D = int(input())
@@ -173,12 +174,48 @@ status = solver.Solve()
 
 # Resultado
 if status == pywraplp.Solver.OPTIMAL:
-    # Inicializa matriz do calendário (horários como linhas, dias como colunas)
-    calendario = [["-" for _ in range(D)] for _ in range(H)]
+    # 1. Calendário
+    calendario = [["----" for _ in range(D)] for _ in range(H)]
+    turmas_selecionadas_lista = []
     for turma_id, _, hs, _ in entrada:
         if x[turma_id].solution_value() == 1:
+            turmas_selecionadas_lista.append(turma_id)
             for d, h in hs:
-                calendario[h][d] = turma_id
-    print(calendario)
+                if d < D and h < H:
+                    calendario[h][d] = turma_id
+
+    # 2. Métricas
+    carga_horaria_total = sum(
+        len(hs) * 15 for t, _, hs, _ in entrada if x[t].solution_value() == 1
+    )
+
+    metricas = {
+        "soma_preferencias": round(preferencias.solution_value(), 2),
+        "numero_buracos": int(buracos.solution_value()),
+        "dias_com_aula": int(
+            quantidade_dias.solution_value()
+            if not DISTRIBUICAO_CENTRALIZADA
+            else D - quantidade_dias.solution_value()
+        ),
+        "carga_horaria_total": carga_horaria_total,
+    }
+
+    # 3. Objeto final
+    resultado_final = {
+        "mensagem": "Solução de grade ótima encontrada!",
+        "calendario": calendario,
+        "metricas": metricas,
+        "turmas_selecionadas": sorted(turmas_selecionadas_lista),
+    }
+
+    # 4. Imprime o objeto como uma string JSON
+    # Esta é a única coisa que o script vai imprimir na saída padrão (stdout)
+    print(json.dumps(resultado_final, indent=4))
+
 else:
-    print("❌ Nenhuma solução ótima encontrada.")
+    # Em caso de erro, imprime um JSON de erro
+    resultado_erro = {
+        "erro": "Nenhuma solução ótima ou viável encontrada.",
+        "mensagem": "Tente ajustar os pesos ou a carga horária máxima.",
+    }
+    print(json.dumps(resultado_erro))
