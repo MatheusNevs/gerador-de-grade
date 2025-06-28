@@ -32,5 +32,5 @@ exemplo_requisicao = {
     ],
 }
 
-resp = requests.get("http://localhost:5000/gerar-grade", json=exemplo_requisicao)
+resp = requests.post("http://localhost:5000/gerar-grade", json=exemplo_requisicao)
 print(resp.json())
