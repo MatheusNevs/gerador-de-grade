@@ -136,10 +136,36 @@ quantidade_dias = solver.Sum(dias_ocupados)
 if DISTRIBUICAO_CENTRALIZADA:
     quantidade_dias = D - quantidade_dias
 
+# 1. Normalização das Preferências
+solver.Maximize(preferencias)
+max_preferencias = solver.Solve()
+
+if max_preferencias == pywraplp.Solver.OPTIMAL:
+    max_preferencia_real = solver.Objective().Value()
+else:
+    print(
+        "❌ Não foi possível encontrar uma solução viável na Fase 1. A grade pode ser impossível."
+    )
+    exit()
+
+objetivo_preferencias_norm = (
+    preferencias / max_preferencia_real if max_preferencia_real > 0 else 0
+)
+
+# 2. Normalização dos Buracos
+max_buracos_possivel = D * (H - 2) if H > 2 else 1  # Evita divisão por zero se H<=2
+objetivo_buracos_norm = (
+    buracos / max_buracos_possivel if max_buracos_possivel > 0 else 0
+)
+
+# 3. Normalização da Quantidade de Dias
+objetivo_dias_norm = quantidade_dias / D if D > 0 else 0
+
+# Definindo a função objetivo final
 solver.Maximize(
-    PESO_MAXIMIZAR_PREFERENCIA * preferencias
-    - PESO_MINIMIZAR_BURACOS * buracos
-    + PESO_QUANTIDADE_DIAS * quantidade_dias
+    PESO_MAXIMIZAR_PREFERENCIA * objetivo_preferencias_norm
+    - PESO_MINIMIZAR_BURACOS * objetivo_buracos_norm
+    + PESO_QUANTIDADE_DIAS * objetivo_dias_norm
 )
 
 # Solve
