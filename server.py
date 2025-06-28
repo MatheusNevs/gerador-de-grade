@@ -67,7 +67,7 @@ def gerar_grade():
     # Executa o main.py simulando entrada do usuário
     try:
         resultado = subprocess.run(
-            ["python3", "main.py"],
+            ["python3", "optimizer.py"],
             input=entradas_txt_str.encode(),
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
