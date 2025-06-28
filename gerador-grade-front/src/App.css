@@ -1,0 +1,284 @@
+/* src/App.css */
+
+/* --- Variáveis Globais (Tema) --- */
+/* Mude as cores aqui para alterar o tema facilmente */
+:root {
+  --primary-color: #4a90e2; /* Azul principal */
+  --secondary-color: #f5f7fa; /* Fundo cinza claro */
+  --text-color: #333;
+  --border-color: #dce1e6;
+  --bg-color: #ffffff; /* Fundo branco dos cards */
+  --error-color: #d9534f; /* Vermelho para erros */
+  --success-color: #5cb85c; /* Verde para sucesso */
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+}
+
+/* --- Estilos Globais --- */
+body {
+  font-family: var(--font-family);
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+  margin: 0;
+  padding: 2rem;
+}
+
+/* --- Container Principal --- */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: var(--bg-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* --- Cabeçalho --- */
+header {
+  padding: 1.5rem 2rem;
+  background-color: var(--primary-color);
+  color: white;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.75rem;
+}
+
+header p {
+  margin: 0.5rem 0 0;
+  opacity: 0.9;
+}
+
+/* --- Layout Principal --- */
+.main-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  padding: 2rem;
+}
+
+/* --- Seções de Formulário e Resultado --- */
+.form-section,
+.result-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* --- Grupos de Formulário (Fieldset) --- */
+fieldset {
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+legend {
+  font-weight: 600;
+  color: var(--primary-color);
+  padding: 0 0.5rem;
+}
+
+/* --- Campos e Entradas --- */
+label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.checkbox-label {
+  justify-content: flex-start;
+  gap: 0.5rem;
+}
+
+input[type="number"],
+input[type="text"] {
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  width: 100px;
+  text-align: right;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}
+
+/* --- Formulário de Adicionar Turma --- */
+.turma-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.turma-form input {
+  width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.turma-form button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.turma-form button:hover {
+  background-color: #357abd;
+}
+
+/* --- Lista de Turmas Adicionadas --- */
+.turmas-list {
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.turmas-list h3 {
+  margin: 0 0 1rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+.turmas-list ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.turmas-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  border-bottom: 1px solid #eef0f2;
+}
+.turmas-list li:last-child {
+  border-bottom: none;
+}
+
+.remove-btn {
+  background: none;
+  border: none;
+  color: var(--error-color);
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0 0.5rem;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+.remove-btn:hover {
+  background-color: #fce8e6;
+}
+
+/* --- Seção de Resultados --- */
+.generate-btn {
+  background-color: var(--success-color);
+  color: white;
+  border: none;
+  padding: 0.8rem 1rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.generate-btn:disabled {
+  background-color: #999;
+  cursor: not-allowed;
+}
+
+.generate-btn:hover:not(:disabled) {
+  background-color: #4a9a4a;
+}
+
+.error-box {
+  background-color: #f2dede;
+  color: var(--error-color);
+  border: 1px solid var(--error-color);
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.resultado-container h3,
+.resultado-container h4 {
+  color: var(--primary-color);
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+.metricas p {
+  margin: 0.5rem 0;
+}
+
+/* --- Tabela do Calendário --- */
+.calendario table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  font-size: 0.85rem;
+}
+
+.calendario th,
+.calendario td {
+  border: 1px solid var(--border-color);
+  padding: 0.5rem;
+  text-align: center;
+  height: 3rem;
+}
+
+.calendario th {
+  background-color: var(--secondary-color);
+  font-weight: 600;
+}
+
+.calendario td {
+  background-color: var(--bg-color);
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.turmas-selecionadas p {
+  background-color: var(--secondary-color);
+  padding: 1rem;
+  border-radius: 6px;
+  line-height: 1.6;
+}
+
+.info {
+  font-size: 0.8rem;
+  color: #666;
+  margin: -0.5rem 0 0;
+}
+
+/* --- Responsividade para Telas Menores --- */
+@media (max-width: 900px) {
+  body {
+    padding: 1rem;
+  }
+  .main-layout {
+    grid-template-columns: 1fr;
+  }
+}
