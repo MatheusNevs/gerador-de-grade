@@ -25,7 +25,17 @@ O algoritmo utiliza técnicas de programação linear inteira mista, implementad
 
 ## Como usar
 
-1. Instale as dependências necessárias, incluindo a biblioteca `ortools` (veja os comentários em `main.py`).
-2. Execute o arquivo `main.py` para gerar a grade ótima.
+Siga estes passos para configurar e executar o projeto em um sistema Linux:
 
-Para mais detalhes sobre as restrições e funcionamento, consulte os comentários no arquivo `main.py`.
+### Pré-requisitos
+
+- Python 3.x instalado
+
+### Como executar
+
+1. Execute `python3 -m venv po`
+2. Execute `source po/bin/activate`
+3. Execute `python -m pip install --upgrade --user ortools`
+4. Execute `bash executar_testes.sh` para executar os testes
+5. Execute `python3 main.py` para usar o programa
+6. Teste o programa como quiser!
