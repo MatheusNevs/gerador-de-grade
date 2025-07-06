@@ -1,15 +1,20 @@
 import re
 from ortools.linear_solver import pywraplp
 
-# --- SEÇÃO DE CONFIGURAÇÃO E ENTRADA ---
-
 def coletar_configuracoes():
-    """
-    Coleta interativamente as configurações da otimização.
-    Pede os pesos em uma escala de 0-100 e os normaliza para uso no solver.
-    """
     print("--- Configuração da Otimização ---")
     
+    while True:
+        resposta_dist = input("Deseja centralizar as aulas em menos dias (s/n)? ").lower().strip()
+        if resposta_dist == 's':
+            dist_centralizada = True
+            break
+        elif resposta_dist == 'n':
+            dist_centralizada = False
+            break
+        else:
+            print("Erro: Resposta inválida. Por favor, digite 's' para sim ou 'n' para não.")
+            
     while True:
         try:
             ch_max = int(input("Digite a carga horária máxima total (ex: 390): ").strip())
@@ -47,21 +52,19 @@ def coletar_configuracoes():
         except ValueError:
             print("Erro: Por favor, insira um número.")
             
-    # Normaliza os pesos para que a soma seja 1.0, o que é ideal para o solver
     soma_pesos = p_pref_100 + p_buracos_100 + p_dias_100
     
     if soma_pesos == 0:
-        # Se todos os pesos forem 0, não há o que otimizar, mas evitamos divisão por zero
         print("Aviso: Todos os pesos são 0. A otimização não terá um objetivo claro.")
-        return 0.0, 0.0, 0.0
+        p_pref_norm, p_buracos_norm, p_dias_norm = 0.0, 0.0, 0.0
     else:
         p_pref_norm = p_pref_100 / soma_pesos
         p_buracos_norm = p_buracos_100 / soma_pesos
         p_dias_norm = p_dias_100 / soma_pesos
-        return ch_max, p_pref_norm, p_buracos_norm, p_dias_norm
+        
+    return dist_centralizada, ch_max, p_pref_norm, p_buracos_norm, p_dias_norm
 
 
-# Mapeamentos e funções de parsing (sem alterações)
 D = 6 
 H = 15
 DIA_MAP = {'2': 0, '3': 1, '4': 2, '5': 3, '6': 4, '7': 5}
@@ -70,6 +73,23 @@ HORARIO_MAP = {
     'T1': 5, 'T2': 6, 'T3': 7, 'T4': 8, 'T5': 9, 'T6': 10,
     'N1': 11, 'N2': 12, 'N3': 13, 'N4': 14,
 }
+HORARIO_DISPLAY_LABELS = [
+    'M1 08:00 - 08:55 ',
+    'M2 08:55 - 09:50 ',
+    'M3 10:00 - 10:55',
+    'M4 10:55 - 11:50',
+    'M5 12:00 - 12:55',
+    'T1 13:00 - 13:50',
+    'T2 14:00 - 14:55',
+    'T3 14:55 - 15:50',
+    'T4 16:00 - 16:55',
+    'T5 16:55 - 17:50',
+    'T6 18:00 - 18:50',
+    'N1 19:00 - 19:50',
+    'N2 19:50 - 20:40',
+    'N3 20:50 - 21:40',
+    'N4 21:40 - 22:30',
+]
 
 def parse_horario(horario_str):
     horarios_finais = []
@@ -101,11 +121,38 @@ def coletar_entradas():
     print("\n--- Cadastro de Disciplinas para Otimização ---")
     print("Insira os dados de cada turma. Digite 'fim' no código da disciplina para terminar.")
     while True:
-        cod_disciplina = input("\nDigite o código da disciplina (ex: CIC0105) ou 'fim': ").strip().upper()
+        while True:
+            cod_disciplina = input("\nDigite o código da disciplina (ex: CIC0105) ou 'fim': ").strip().upper()
+            if cod_disciplina == 'FIM':
+                break
+            if len(cod_disciplina) == 7:
+                break
+            else:
+                print("Erro: O código da disciplina deve ter exatamente 7 caracteres.")
+        
         if cod_disciplina == 'FIM':
             break
-        turma = input(f"Digite a turma para {cod_disciplina} (ex: 01): ").strip()
-        horario_str = input(f"Digite o(s) horário(s) para {cod_disciplina}-{turma} (ex: 35M12): ")
+        
+        while True:
+            turma_input = input(f"Digite a turma para {cod_disciplina} (01 a 99): ").strip()
+            if turma_input.isdigit():
+                turma_num = int(turma_input)
+                if 1 <= turma_num <= 99:
+                    turma = f"{turma_num:02d}"
+                    break
+                else:
+                    print("Erro: O número da turma deve estar entre 1 e 99.")
+            else:
+                print("Erro: A turma deve ser um número.")
+
+        while True:
+            horario_str = input(f"Digite o(s) horário(s) para {cod_disciplina}-{turma} (ex: 35M12): ")
+            horarios = parse_horario(horario_str)
+            if horarios:
+                break
+            else:
+                print("Erro: O horário fornecido não resultou em nenhuma aula válida. Verifique o formato e tente novamente.")
+
         while True:
             try:
                 peso_str = input(f"Digite o peso/preferência para esta turma (0 a 100): ").strip()
@@ -116,20 +163,15 @@ def coletar_entradas():
                     print("Erro: O peso deve ser um número entre 0 e 100.")
             except ValueError:
                 print("Erro: Por favor, insira um valor numérico para o peso.")
-        horarios = parse_horario(horario_str)
-        if not horarios:
-            print(f"AVISO: Nenhuma turma foi adicionada para {cod_disciplina}-{turma} pois nenhum horário válido foi fornecido.")
-            continue
+
         turma_id = f"{cod_disciplina}-{turma}"
         peso_normalizado = peso / 100.0
         entradas.append((turma_id, cod_disciplina, horarios, peso_normalizado))
         print(f"✅ Turma '{turma_id}' adicionada com sucesso.")
     return entradas
 
-# --- EXECUÇÃO PRINCIPAL ---
 
-# 1. Coletar configurações e entradas
-CARGA_HORARIA_MAXIMA, PESO_MAXIMIZAR_PREFERENCIA, PESO_MINIMIZAR_BURACOS, PESO_QUANTIDADE_DIAS = coletar_configuracoes()
+DISTRIBUICAO_CENTRALIZADA, CARGA_HORARIA_MAXIMA, PESO_MAXIMIZAR_PREFERENCIA, PESO_MINIMIZAR_BURACOS, PESO_QUANTIDADE_DIAS = coletar_configuracoes()
 entrada = coletar_entradas()
 
 if not entrada:
@@ -138,10 +180,7 @@ if not entrada:
 
 print("\n--- Iniciando Otimização com as Configurações e Turmas Fornecidas ---")
 
-# Preferências de distribuição
-DISTRIBUICAO_CENTRALIZADA = True
 
-# O restante do código do solver permanece o mesmo...
 solver = pywraplp.Solver.CreateSolver("SCIP")
 
 x = {}
@@ -258,7 +297,6 @@ solver.Maximize(
 
 status = solver.Solve()
 
-# --- SEÇÃO DE RESULTADOS ---
 if status == pywraplp.Solver.OPTIMAL or status == pywraplp.Solver.FEASIBLE:
     print("\n--- ✅ Solução Ótima Encontrada ---")
     calendario = [['-' for _ in range(D)] for _ in range(H)]
@@ -272,26 +310,26 @@ if status == pywraplp.Solver.OPTIMAL or status == pywraplp.Solver.FEASIBLE:
             for d, h in hs:
                 calendario[h][d] = turma_id
 
-    INV_DIA_MAP = {v: k for k, v in DIA_MAP.items()}
-    INV_HORARIO_MAP = {v: k for k, v in HORARIO_MAP.items()}
     DIAS_SEMANA = ['Seg(2)', 'Ter(3)', 'Qua(4)', 'Qui(5)', 'Sex(6)', 'Sab(7)']
-
+    
+    label_width = 20
     col_width = max([len(t) for t in turmas_selecionadas] + [10]) + 2
-    print("\nHorário".ljust(8) + "".join(f"{dia.center(col_width)}" for dia in DIAS_SEMANA))
-    print("-" * (8 + col_width * D))
+
+    print("\n" + "Horário".ljust(label_width) + "".join(f"{dia.center(col_width)}" for dia in DIAS_SEMANA))
+    print("-" * (label_width + col_width * D))
 
     for h in range(H):
-        horario_label = INV_HORARIO_MAP.get(h, f'H{h}')
+        horario_label = HORARIO_DISPLAY_LABELS[h]
         
-        if horario_label in ['T1', 'N1']:
-             print("-" * (8 + col_width * D))
+        if horario_label.startswith('T1') or horario_label.startswith('N1'):
+             print("-" * (label_width + col_width * D))
 
         linha = "".join(f"{calendario[h][d]:^{col_width}}" for d in range(D))
         linha_formatada = linha.replace("-".center(col_width), " ".center(col_width))
         
-        print(f"{horario_label.ljust(7)}|{linha_formatada}")
+        print(f"{horario_label.ljust(label_width-1)}|{linha_formatada}")
 
-    print("-" * (8 + col_width * D))
+    print("-" * (label_width + col_width * D))
     print("\nTurmas Selecionadas:", ", ".join(turmas_selecionadas) if turmas_selecionadas else "Nenhuma")
     print(f"Carga horária total alocada: {carga_horaria_total} horas-aula")
     num_buracos = sum(b.solution_value() for b in buracos_list)
