@@ -23,7 +23,6 @@ def coletar_configuracoes():
             print("Erro: Por favor, insira um número inteiro.")
 
     print("\nDigite os pesos para a função objetivo (valores de 0 a 100).")
-    print("Ex: Preferências=70, Buracos=20, Dias=10")
     
     while True:
         try:
