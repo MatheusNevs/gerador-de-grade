@@ -1,17 +1,23 @@
 from ortools.linear_solver import pywraplp
 
+###### CONFIGURAÇÃO DO PROBLEMA E ENTRADAS (PARA TESTE) ######
+
 # Configurações
 D = 5  # dias da semana
 H = 8  # horários por dia
 CARGA_HORARIA_MAXIMA = 390  # carga horária máxima total pedida (em horas)
 
 # Pesos para o objetivo (ajustáveis conforme a preferência do usuário)
-PESO_MAXIMIZAR_PREFERENCIA = 0.8  # Peso referente à maximização de preferências
-PESO_MINIMIZAR_BURACOS = 0.0
-PESO_QUANTIDADE_DIAS = 0.2  # Peso referente à distribuição mais uniforme ou centralizada (depende da preferência do usuário de distribuição)
+PESO_MAXIMIZAR_PREFERENCIA = 0.5  # Peso referente à maximização de preferências
+PESO_MINIMIZAR_BURACOS = 0.2
+PESO_QUANTIDADE_DIAS = (
+    0.3  # Peso referente à distribuição mais uniforme ou centralizada
+)
 
 # Preferências
-DISTRIBUICAO_CENTRALIZADA = True  # Se True, distribui turmas de forma mais centralizada
+DISTRIBUICAO_CENTRALIZADA = (
+    False  # Se True, distribui turmas de forma mais centralizada
+)
 
 # Entrada: (id_turma, cod_disciplina, horarios, peso)
 entrada = [
@@ -28,7 +34,25 @@ entrada = [
     ("QUI105-T2", "QUI105", [(0, 6), (0, 7)], 0.6),
     ("HIS110-T2", "HIS110", [(1, 6), (1, 7)], 0.45),
     ("GEO120-T2", "GEO120", [(2, 6), (2, 7)], 0.5),
+    ("MAT201-T1", "MAT201", [(1, 0), (1, 1)], 0.7),
+    ("MAT201-T2", "MAT201", [(3, 3), (3, 4)], 0.65),
+    ("FIS202-T1", "FIS202", [(2, 4), (2, 5)], 0.6),
+    ("FIS202-T2", "FIS202", [(4, 2), (4, 3)], 0.55),
+    ("BIO204-T1", "BIO204", [(0, 2), (0, 3)], 0.8),
+    ("BIO204-T2", "BIO204", [(3, 7), (4, 5)], 0.75),
+    ("QUI205-T1", "QUI205", [(1, 5), (1, 6)], 0.7),
+    ("QUI205-T2", "QUI205", [(2, 3), (2, 4)], 0.65),
+    ("HIS210-T1", "HIS210", [(0, 5), (1, 7)], 0.6),
+    ("HIS210-T2", "HIS210", [(4, 4), (4, 5)], 0.55),
+    ("GEO220-T1", "GEO220", [(3, 3), (3, 4), (3, 5)], 0.7),
+    ("GEO220-T2", "GEO220", [(1, 1), (1, 2)], 0.6),
+    ("MAT301-T1", "MAT301", [(2, 7), (3, 6)], 0.8),
+    ("FIS302-T1", "FIS302", [(0, 4), (1, 4)], 0.75),
+    ("BIO304-T1", "BIO304", [(4, 0), (4, 2)], 0.7),
+    ("QUI305-T1", "QUI305", [(2, 5), (2, 6)], 0.65),
 ]
+
+###### FIM DA CONFIGURAÇÃO DO PROBLEMA ######
 
 # Solver
 solver = pywraplp.Solver.CreateSolver("SCIP")
